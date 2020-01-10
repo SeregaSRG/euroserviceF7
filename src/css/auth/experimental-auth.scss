@@ -1,0 +1,15 @@
+
+.auth{
+  display: flex;
+  flex-direction: column;
+  height:100%;
+  .auth__inputs{
+    flex-grow:1;
+    flex-shrink: 0;
+  }
+
+  .auth__button{
+    flex-shrink: 0;
+    padding-bottom:50px;
+  }
+}

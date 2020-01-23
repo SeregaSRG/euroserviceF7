@@ -4,14 +4,14 @@
       <mf-inapp-navbar class="create-order__navbar" :title="'Создание заявки'"></mf-inapp-navbar>
       <div class="create-order__content">
         <div class="mf-page-container">
-          <mf-input :w100="true" :error="inputErrors.name" :value.sync="inputs.name" placeholder="Название"></mf-input>
-          <mf-select :w100="true" :error="inputErrors.serviceCategory" v-model="inputs.serviceCategory" placeholder="Категория"
+          <mf-input :w100="true" @focus="inputErrors.name = ''" :error="inputErrors.name" :value.sync="inputs.name" placeholder="Название"></mf-input>
+          <mf-select :w100="true" @input="inputErrors.serviceCategory = ''" :error="inputErrors.serviceCategory" v-model="inputs.serviceCategory" placeholder="Категория"
                      :options="serviceCategories"></mf-select>
-          <mf-select :loading="worksLoading" :w100="true" :error="inputErrors.work" v-model="inputs.work" placeholder="Наименование работ"
+          <mf-select @input="inputErrors.work = ''" :loading="worksLoading" :w100="true" :error="inputErrors.work" v-model="inputs.work" placeholder="Наименование работ"
                      :options="works"></mf-select>
           <!--<mf-input :w100="true" :error="inputErrors.serviceName" :value.sync="inputs.serviceName"
                     placeholder="Наименование работ"></mf-input>-->
-          <mf-input :w100="true" :error="inputErrors.address" :value.sync="inputs.address"
+          <mf-input @focus="inputErrors.address = ''" :w100="true" :error="inputErrors.address" :value.sync="inputs.address"
                     placeholder="Адрес"></mf-input>
         </div>
         <mf-page-separator title="Cрок исполнения"></mf-page-separator>
@@ -28,7 +28,7 @@
         <div class="mf-page-container">
           <mf-input :w100="true" :error="inputErrors.comment" :value.sync="inputs.comment"
                     placeholder="Комментарий"></mf-input>
-          <mf-input :w100="true" :error="inputErrors.price" :value.sync="inputs.price"
+          <mf-input @focus="inputErrors.price = ''" :w100="true" :error="inputErrors.price" :value.sync="inputs.price"
                     placeholder="Стоимость"></mf-input>
         </div>
         <div class="create-order__about-sum">
@@ -61,15 +61,15 @@
         serviceCategory: null,
         works: [],
         inputs: {
-          name: null,
+          name: '',
           serviceCategory: null,
           work: null,
           dateTime: null,
           photos: [],
           documents: [],
-          comment: null,
-          price: null,
-          address: null
+          comment: '',
+          price: '',
+          address: ''
         },
         inputErrors: {
           name: null,
@@ -95,10 +95,51 @@
       this.inputs.dateTime = new Date(new Date().getTime() + 36000000)
     },
     methods: {
+      checkForValid () {
+        this.inputErrors.name = null
+        this.inputErrors.serviceCategory = null
+        this.inputErrors.work = null
+        this.inputErrors.dateTime = null
+        this.inputErrors.comment = null
+        this.inputErrors.price = null
+        this.inputErrors.address = null
+        if (this.inputs.name.length === 0) {
+          this.inputErrors.name = 'Укажите имя'
+        }
+        if (this.inputs.serviceCategory === null) {
+          this.inputErrors.serviceCategory = 'Выберите категорию'
+        }
+        if (this.inputs.work === null) {
+          this.inputErrors.work = 'Выберите наименование'
+        }
+        if (this.inputs.address.length === 0) {
+          this.inputErrors.address = 'Укажите адрес'
+        }
+        if (this.inputs.price.length === null) {
+          this.inputErrors.price = 'Укажите цену'
+        }
+        else if (!this.inputs.work) {
+          this.inputErrors.price = 'Сначала выберите работу'
+        } else {
+          if (parseInt(this.inputs.price) < this.inputs.work.price) {
+            this.inputErrors.price = 'Цена за работу не может быть меньше стандартной'
+          }
+        }
+        for (let index in this.inputErrors) {
+          if (this.inputErrors[index]) {
+            return false
+          }
+        }
+        return true
+      },
       showInputs() {
         console.log(this.serviceCategory)
       },
       createOrder() {
+        if (!this.checkForValid()) {
+          this.$f7.dialog.alert('Проверьте правильность ввода данных', 'Ошибка')
+          return
+        }
         let photoPromises = []
         let documentPromises = []
         let getPromise = (file) => {
@@ -156,7 +197,9 @@
           this.$f7.dialog.preloader('Подождите')
           Api.createBid(request)
             .then((response) => {
+              let serverError = false
               if (typeof response.error !== 'undefined') {
+                serverError = true
                 this.$f7.dialog.close()
                 this.$f7.dialog.alert(response.error.message, 'Ошибка')
               } else {
@@ -174,9 +217,11 @@
                   }
                 }
               }
-              this.$f7router.navigate('/', {
-                reloadCurrent: true
-              })
+              if (!serverError) {
+                this.$f7router.navigate('/', {
+                  reloadCurrent: true
+                })
+              }
             })
             .catch(() => {
               this.$f7.dialog.close()

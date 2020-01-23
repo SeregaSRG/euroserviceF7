@@ -10,6 +10,7 @@
         :placeholder="placeholder"
         :class="{ 'mf-input__input_w100' : w100 }"
         @change="$emit('change', $event)"
+        @focus="$emit('focus', $event)"
     >
     <div class="mf-input__error-message"
          :class="{ 'mf-input__error-message_w100' : w100 }">
@@ -19,6 +20,7 @@
 </template>
 
 <script>
+  import InputMask from 'inputmask'
   export default {
     name: 'mfInput',
     props: {
@@ -91,6 +93,12 @@
     },
     mounted () {
       this.currentValue = this.value
+      if (this.mask) {
+        let mask = new InputMask({
+          mask: this.mask
+        })
+        mask.mask(this.$refs.input)
+      }
     }
   }
 </script>
@@ -98,7 +106,7 @@
 <style lang="scss" scoped>
   .mf-input {
     width: 100%;
-    height: 74px;
+    min-height: 74px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -118,6 +126,7 @@
       font-size: 16px;
       line-height: 24px;
       color: #001B36;
+      flex-shrink: 0;
       &.mf-input__input_w100{
         width:100%;
         max-width:none;
@@ -132,8 +141,9 @@
       }
     }
     .mf-input__error-message {
-      height: 18px;
+      min-height: 18px;
       width: calc(100% - 10px);
+      padding-bottom:3px;
       max-width: 328px;
       padding-left: 14px;
       color: red;

@@ -24,8 +24,9 @@
         :placeholder="placeholder"
         :class="{ 'mf-input__input_w100' : w100 }"
     >-->
-    <div class="mf-input__error-message">
-      <!-- error message -->
+    <div class="mf-input__error-message"
+         :class="{ 'mf-input__error-message_w100' : w100 }">
+      {{ error }}
     </div>
   </div>
 </template>
@@ -39,6 +40,10 @@
         default () {
           return []
         }
+      },
+      error: {
+        type: String,
+        default: null
       },
       loading: {
         type: Boolean,
@@ -106,11 +111,12 @@
 <style lang="scss" scoped>
   .mf-select {
     width: 100%;
-    height: 74px;
+    min-height: 74px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+    flex-shrink: 0;
     .mf-select__wrapper{
       width: calc(100% - 10px);
       max-width: 328px;
@@ -179,12 +185,16 @@
       }
     }
     .mf-input__error-message {
-      height: 18px;
+      min-height: 18px;
       width: calc(100% - 10px);
       max-width: 328px;
       padding-left: 14px;
       color: red;
       font-size: 12px;
+      &.mf-input__error-message_w100{
+        width:100%;
+        max-width:none;
+      }
     }
   }
 </style>

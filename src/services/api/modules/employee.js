@@ -22,4 +22,10 @@ export default {
   applyBid(request) {
     return Network.put('employee/v1/bid/apply/' + request.bidId, {apply: request.status}, true)
   },
+  getCompanies() {
+    return Network.get('employee/v1/company')
+  },
+  registration(request) {
+    return Network.post('employee/v1/register', request)
+  }
 }

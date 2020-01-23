@@ -7,6 +7,7 @@ Vue.mixin({
             // this.$f7router.navigate('/about/')
         },
         responseErrorHelper: (data, fieldServerName, appField, appErrors) => {
+            console.log(fieldServerName)
             if (Array.isArray(data)) {
                 let errorField = data.find(serverField => {
                     if (typeof serverField.field !== 'undefined' && serverField.field === fieldServerName) {

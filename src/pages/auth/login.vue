@@ -56,8 +56,13 @@
           email: null,
           password: null
         },
-        inputsValid: false,
         loginLoading: false
+      }
+    },
+    computed: {
+      inputsValid () {
+        let emailRegexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        return (emailRegexp.test(this.credentials.email) && this.credentials.password.length !== 0)
       }
     },
     props: {
@@ -138,13 +143,6 @@
       }
     },
     watch: {
-      credentials: {
-        immediate: false,
-        deep: true,
-        handler() {
-          this.input()
-        }
-      },
       loginLoading: {
         handler(to, from) {
           if (to) {

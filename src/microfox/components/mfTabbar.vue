@@ -1,6 +1,6 @@
 <template>
     <div class="mf-tabbar"
-         :style="{ height: pageHeight }"
+         :style="(pageHeight) ? { height: pageHeight } : {}"
     >
         <div class="mf-tabbar__bar">
             <div
@@ -98,6 +98,10 @@
                 bottom: -1px;
                 transition: .3s;
             }
+        }
+        .mf-tabbar__page{
+            flex-grow:1;
+            overflow-y:auto;
         }
     }
 </style>

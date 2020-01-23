@@ -24,5 +24,11 @@ export default {
   },
   getWorks(request) {
     return Network.get('customer/v1/work', request, true)
+  },
+  getCompanies() {
+    return Network.get('customer/v1/company')
+  },
+  registration(request) {
+    return Network.post('customer/v1/register', request)
   }
 }

@@ -1,7 +1,7 @@
 <template>
   <f7-page name="customer-bid" bg-color="white">
     <div class="bid">
-      <mf-inapp-navbar class="create-order__navbar" :title="'Завяка №'+bidId"></mf-inapp-navbar>
+      <mf-inapp-navbar class="create-order__navbar" :title="'Заявка №'+bidId"></mf-inapp-navbar>
       <div class="bid__loading" v-if="loading">
         <f7-preloader color="green"></f7-preloader>
       </div>
@@ -156,7 +156,11 @@
           })
           .catch(() => {
             this.$f7.dialog.close()
-            this.$f7.dialog.alert('Ошибка запросы', 'Ошибка')
+            if (typeof response.data.error.message !== 'undefined') {
+              this.$f7.dialog.alert(response.data.error.message, 'Ошибка')
+            } else {
+              this.$f7.dialog.alert('Сервер неверно ответил на запрос', 'Ошибка')
+            }
           })
       },
       rejectBid() {

@@ -2,24 +2,27 @@
   <f7-page name="bidsList" bg-color="white">
     <div class="workspace">
       <mf-inapp-navbar :menuButton="true" class="create-order__navbar" :title="pageTitle"></mf-inapp-navbar>
-      <div class="application" v-show="bids.length === 0 && !loading">
-        <img class="image" src="../../assets/workspace/Artwork.jpg">
-        <p class="description">У Вас пока нет активных заявок, создайте новую заявку</p>
-      </div>
-      <div class="bids-list ptr-content" ref="ptr" data-ptr-distance="55" @ptr:refresh="updateBids" v-show="!loading">
+      <div class="bids-list__content ptr-content" ref="ptr" data-ptr-distance="55" @ptr:refresh="updateBids">
         <div class="ptr-preloader">
           <div class="preloader"></div>
           <div class="ptr-arrow"></div>
         </div>
-        <div class="bids-list__wrapper ptr-watch-scrollable">
-          <bid-item v-for="bid in bids" :bid="bid" :key="bid.id">
-          </bid-item>
+        <div class="application" v-show="bids.length === 0 && !loading">
+          <img class="image" src="../../assets/workspace/Artwork.jpg">
+          <p class="description">У Вас пока нет активных заявок, создайте новую заявку</p>
+        </div>
+        <div class="bids-list ptr-watch-scrollable" ref="ptr"
+             v-show="!loading && bids.length !== 0">
+          <div class="bids-list__wrapper">
+            <bid-item v-for="bid in bids" :bid="bid" :key="bid.id">
+            </bid-item>
+          </div>
+        </div>
+        <div class="loading ptr-ignore" v-if="loading">
+          <f7-preloader color="green"></f7-preloader>
         </div>
       </div>
-      <div class="loading" v-if="loading">
-        <f7-preloader color="green"></f7-preloader>
-      </div>
-      <a href="/customer/create-order/">
+      <a v-if="!archive" href="/customer/create-order/">
         <div class="add">
           <img src="../../assets/workspace/add.svg">
         </div>
@@ -30,7 +33,7 @@
 
 <script>
   import Api from '../../services/api'
-  import BidItem from "../../components/bid";
+  import BidItem from '../../components/bid';
 
   export default {
     name: 'bidsList',
@@ -53,7 +56,7 @@
       }
     },
     computed: {
-      pageTitle () {
+      pageTitle() {
         if (this.archive) {
           return 'Архив заявок'
         } else {
@@ -65,7 +68,7 @@
       openLeftSideMenu() {
         console.log('lol')
       },
-      updateBids (event, done) {
+      updateBids(event, done) {
         console.log(done)
         this.loadBids()
           .then(() => {
@@ -73,19 +76,29 @@
           })
           .catch()
       },
-      loadBids () {
+      loadBids() {
         return Api.customer.getBids({
           archive: this.archive
         })
           .then((response) => {
-            this.bids = response.bids.map(bid => ({
+            let serverBids
+            if (Array.isArray(response.bids)) {
+              serverBids = response.bids
+            } else if (Array.isArray(response)) {
+              serverBids = response
+            } else {
+              this.bids = []
+              return
+            }
+            this.bids = serverBids.map(bid => ({
               id: parseInt(bid.id),
               name: bid.name,
               workName: (typeof bid.works[0] !== 'undefined') ? bid.works[0].name : 'Неизвестно',
-              created: new Date(bid.createdAt.replace('-', '/')),
+              created: new Date(bid.createdAt.replace(/-/g, '/')),
               price: bid.price,
               status: bid.status
             }))
+            console.log(this.bids)
           })
           .catch((e) => console.error(e))
       }
@@ -102,17 +115,87 @@
 </script>
 
 <style lang="scss" scoped>
-  .workspace{
+  .create-order__navbar {
+    z-index: 2 !important;
+  }
+
+  .workspace {
     display: flex;
-    height:100%;
+    height: 100%;
     flex-direction: column;
+    overflow-y: hidden;
+    position: relative;
+
+    .ptr-preloader {
+      z-index: 1;
+    }
+
+    .bids-list__content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      height:calc(100% - 56px);
+      overflow-y: scroll;
+
+      .loading {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
+      }
+
+      .bids-list {
+        z-index: 0;
+        height: calc(100% - 56px);
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
+        flex-grow: 1;
+        position: relative;
+
+        .ptr-preloader {
+        }
+
+        .bids-list__wrapper {
+          padding: 16px 8px;
+        }
+      }
+
+      .application {
+        flex-grow: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
+        flex-direction: column;
+
+        .image {
+          width: 145px;
+          height: 135px;
+          box-sizing: content-box;
+        }
+
+        .description {
+          width: 300px;
+          height: 50px;
+          font-family: Roboto;
+          font-style: normal;
+          font-size: 18px;
+          font-weight: normal;
+          line-height: 22px;
+          text-align: center;
+          color: #BEC2CE;
+          padding-top: 15px;
+        }
+      }
+    }
+
     .header {
       box-sizing: border-box;
       display: flex;
       justify-content: center;
       align-items: center;
       width: 100vw;
-      flex-shrink:0;
+      flex-shrink: 0;
       height: 55px;
       box-shadow: 0px 3px 5px rgba(0, 27, 54, 0.15);
       padding: 15px;
@@ -144,55 +227,11 @@
         }
       }
     }
-    .loading{
-      flex-grow:1;
-      display:flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
-    }
-    .bids-list{
-      flex-grow:1;
-      height: calc(100% - 56px);
-      overflow:scroll;
-      background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
-      .bids-list__wrapper{
-        padding: 16px 8px;
-      }
-    }
-    .application {
-      flex-grow:1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
-      flex-direction: column;
-
-      .image {
-        width: 145px;
-        height: 135px;
-        padding-top: 40%;
-        box-sizing: content-box;
-      }
-
-      .description {
-        width: 300px;
-        height: 50px;
-        font-family: Roboto;
-        font-style: normal;
-        font-size: 18px;
-        font-weight: normal;
-        line-height: 22px;
-        text-align: center;
-        color: #BEC2CE;
-        padding-top: 15px;
-      }
-    }
   }
 
 
   .add {
-    position: fixed;
+    position: absolute;
     bottom: 16px;
     right: 16px;
     border-radius: 50%;

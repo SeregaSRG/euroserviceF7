@@ -14,6 +14,7 @@ import customerBid from '../pages/customer/bid'
 import employeeBid from '../pages/employee/bid'
 import store from '../store'
 import employeeReport from '../pages/employee/report'
+import competencies from '../components/competencies'
 
 import NotFoundPage from '../pages/404.vue';
 
@@ -33,13 +34,23 @@ let routes = [
           })
         }
       } else {
-        resolve({
-          component: hello,
-        }, {
-          reloadAll: true,
-          reloadCurrent: true,
-          ignoreCache: true
-        })
+        if (store.state.auth.skipOnboarding) {
+          resolve({
+            component: auth,
+          }, {
+            reloadAll: true,
+            reloadCurrent: true,
+            ignoreCache: true
+          })
+        } else {
+          resolve({
+            component: hello,
+          }, {
+            reloadAll: true,
+            reloadCurrent: true,
+            ignoreCache: true
+          })
+        }
       }
     }
   },

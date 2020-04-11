@@ -4,7 +4,7 @@ import store from '../../store'
 let querystring = require('querystring')
 
 const config = () => ({
-  baseURL: 'https://cors-proxy.erosha.ga/https://api.i-as.ru',
+  baseURL: 'https://api.i-as.ru',
   headers: {
     'Content-Type': 'application/json',
     'accept': 'application/json'
@@ -38,8 +38,8 @@ export default {
           }
         )
         .catch(
-          () => {
-            reject('connection error')
+          (error) => {
+            reject(error)
           }
         )
     })
@@ -61,8 +61,8 @@ export default {
           }
         )
         .catch(
-          () => {
-            reject('connection error')
+          (error) => {
+            reject(error)
           }
         )
     })
@@ -82,8 +82,8 @@ export default {
           }
         )
         .catch(
-          () => {
-            reject('connection error')
+          (error) => {
+            reject(error)
           }
         )
     })

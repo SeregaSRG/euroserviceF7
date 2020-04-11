@@ -7,7 +7,7 @@
           <h2 class="title">Заявка на работы</h2>
           <p class="description">Размещение заявки
             на необходимый Вам тип работ</p>
-          <a class="skip" href="/auth/">Пропустить</a>
+          <a class="skip" @click="goToAuth">Пропустить</a>
         </div>
       </f7-swiper-slide>
       <f7-swiper-slide>
@@ -15,7 +15,7 @@
           <img class="image" src="../assets/onboarding/Art.png">
           <h2 class="title">Контроль процесса</h2>
           <p class="description">Мониторинг и контроль выполнения заказа на всех этапах</p>
-          <a class="skip" href="/auth/">Пропустить</a>
+          <a class="skip" @click="goToAuth">Пропустить</a>
         </div>
       </f7-swiper-slide>
       <f7-swiper-slide>
@@ -23,12 +23,25 @@
           <img class="image" src="../assets/onboarding/Artwork3.png">
           <h2 class="title">Заказ выполнен</h2>
           <p class="description">После выполнения заказа происходит проверка и принятие</p>
-          <a class="skip" href="/auth/">Пропустить</a>
+          <a class="skip" @click="goToAuth">Продолжить</a>
         </div>
       </f7-swiper-slide>
     </f7-swiper>
   </f7-page>
 </template>
+
+<script>
+  export default {
+    methods: {
+      goToAuth () {
+        console.log('aga')
+        this.$store.commit('auth/SET_UNBOARDING_SKIP')
+        this.$f7router.navigate('/auth')
+        this.$f7router.clearPreviousHistory()
+      }
+    }
+  }
+</script>
 
 <style lang="scss">
   .swiper-slide-content {

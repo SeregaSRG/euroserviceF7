@@ -6,12 +6,13 @@
         <mf-page-separator title="Фотографии"></mf-page-separator>
         <photo-input v-model="inputs.photos"></photo-input>
         <div class="mf-page-container">
-          <mf-input :w100="true" :error="inputErrors.comment" :value.sync="inputs.comment"
+          <mf-input :w100="true" :error="inputErrors.comment" :valid-condition="validComment" :value.sync="inputs.comment"
                     placeholder="Комментарий"></mf-input>
         </div>
       </div>
       <mf-bottom-button
           class="report__button"
+          :disabled="!validComment"
           :action="sendReport"
       >Отправить
       </mf-bottom-button>
@@ -42,7 +43,7 @@
       return {
         inputs: {
           photos: [],
-          comment: null
+          comment: ''
         },
         inputErrors: {
           comment: null,
@@ -50,9 +51,53 @@
         }
       }
     },
+    computed: {
+      validComment () {
+        return this.inputs.comment.length !== 0
+      }
+    },
     methods: {
       sendReport() {
-        let photoPromises = []
+        let photosContents = this.inputs.photos.map(photo => ({
+          name: photo.name,
+          content: photo.base64
+        }))
+
+        let request = {
+          "bidId": this.bid.id,
+          "comment": this.inputs.comment,
+          "photos": photosContents
+        }
+        this.$f7.dialog.preloader('Подождите')
+        Api.sendReport(request)
+          .then((response) => {
+            if (typeof response.error !== 'undefined') {
+              this.$f7.dialog.close()
+              this.$f7.dialog.alert(response.error.message, 'Ошибка')
+            } else {
+              // this.$f7router.back()
+              this.$f7.dialog.close()
+            }
+            this.responseErrorHelper(response, 'comment', 'comment', this.inputErrors)
+            this.responseErrorHelper(response, 'photos', 'photos', this.inputErrors)
+            for (let name in this.inputErrors) {
+              if (this.inputErrors.hasOwnProperty(name)) {
+                if (this.inputErrors[name] !== null) {
+                  return false
+                }
+              }
+            }
+            this.$f7router.navigate('/', {
+              reloadCurrent: true
+            })
+          })
+          .catch(() => {
+            this.$f7.dialog.close()
+            this.$f7.dialog.alert('Сервер неверно ответил на запрос', 'Ошибка')
+          })
+        console.log(request)
+
+        /*let photoPromises = []
         let getPromise = (file) => {
           return new Promise((resolve, reject) => {
             let reader = new FileReader();
@@ -80,40 +125,7 @@
             })
           ]
         ).then(() => {
-          let request = {
-            "bidId": this.bid.id,
-            "comment": this.inputs.comment,
-            "photos": photosContents
-          }
-          this.$f7.dialog.preloader('Подождите')
-          Api.sendReport(request)
-            .then((response) => {
-              if (typeof response.error !== 'undefined') {
-                this.$f7.dialog.close()
-                this.$f7.dialog.alert(response.error.message, 'Ошибка')
-              } else {
-                // this.$f7router.back()
-                this.$f7.dialog.close()
-              }
-              this.responseErrorHelper(response, 'comment', 'comment', this.inputErrors)
-              this.responseErrorHelper(response, 'photos', 'photos', this.inputErrors)
-              for (let name in this.inputErrors) {
-                if (this.inputErrors.hasOwnProperty(name)) {
-                  if (this.inputErrors[name] !== null) {
-                    return false
-                  }
-                }
-              }
-              this.$f7router.navigate('/', {
-                reloadCurrent: true
-              })
-            })
-            .catch(() => {
-              this.$f7.dialog.close()
-              this.$f7.dialog.alert('Сервер неверно ответил на запрос', 'Ошибка')
-            })
-          console.log(request)
-        })
+        })*/
         //this.$f7.dialog.alert('Для загрузки файлов необходимы изменения в API', 'Подождите')
       }
     },

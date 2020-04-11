@@ -4,21 +4,25 @@
       <mf-inapp-navbar class="create-order__navbar" :title="'Создание заявки'"></mf-inapp-navbar>
       <div class="create-order__content">
         <div class="mf-page-container">
-          <mf-input :w100="true" @focus="inputErrors.name = ''" :error="inputErrors.name" :value.sync="inputs.name" placeholder="Название"></mf-input>
-          <mf-select :w100="true" @input="inputErrors.serviceCategory = ''" :error="inputErrors.serviceCategory" v-model="inputs.serviceCategory" placeholder="Категория"
+          <mf-input :w100="true" @focus="inputErrors.name = ''" :error="inputErrors.name" :value.sync="inputs.name"
+                    placeholder="Название"></mf-input>
+          <mf-select :w100="true" @input="inputErrors.serviceCategory = ''" :error="inputErrors.serviceCategory"
+                     v-model="inputs.serviceCategory" placeholder="Категория"
                      :options="serviceCategories"></mf-select>
-          <mf-select @input="inputErrors.work = ''" :loading="worksLoading" :w100="true" :error="inputErrors.work" v-model="inputs.work" placeholder="Наименование работ"
+          <mf-select @input="inputErrors.work = ''" :loading="worksLoading" :w100="true" :error="inputErrors.work"
+                     v-model="inputs.work" placeholder="Наименование работ"
                      :options="works"></mf-select>
           <!--<mf-input :w100="true" :error="inputErrors.serviceName" :value.sync="inputs.serviceName"
                     placeholder="Наименование работ"></mf-input>-->
-          <mf-input @focus="inputErrors.address = ''" :w100="true" :error="inputErrors.address" :value.sync="inputs.address"
-                    placeholder="Адрес"></mf-input>
+          <mf-input-address @focus="inputErrors.address = ''" :w100="true" :error="inputErrors.address"
+                            :value.sync="inputs.address"
+                            placeholder="Адрес"></mf-input-address>
         </div>
         <mf-page-separator title="Cрок исполнения"></mf-page-separator>
         <div class="mf-page-container">
           <div class="mf-page-container__parts-2">
-            <mf-date-input :w100="true" type="date" v-model="inputs.dateTime" placeholder="Дата"></mf-date-input>
-            <mf-date-input :w100="true" type="time" v-model="inputs.dateTime" placeholder="Время"></mf-date-input>
+            <mf-date-input :w100="true" :min-val="new Date()" type="date" v-model="inputs.dateTime" placeholder="Дата"></mf-date-input>
+            <mf-date-input :w100="true" :min-val="new Date()" type="time" v-model="inputs.dateTime" placeholder="Время"></mf-date-input>
           </div>
         </div>
         <mf-page-separator title="Фотографии"></mf-page-separator>
@@ -95,7 +99,7 @@
       this.inputs.dateTime = new Date(new Date().getTime() + 36000000)
     },
     methods: {
-      checkForValid () {
+      checkForValid() {
         this.inputErrors.name = null
         this.inputErrors.serviceCategory = null
         this.inputErrors.work = null
@@ -117,8 +121,7 @@
         }
         if (this.inputs.price.length === null) {
           this.inputErrors.price = 'Укажите цену'
-        }
-        else if (!this.inputs.work) {
+        } else if (!this.inputs.work) {
           this.inputErrors.price = 'Сначала выберите работу'
         } else {
           if (parseInt(this.inputs.price) < this.inputs.work.price) {
@@ -142,15 +145,11 @@
         }
         let photoPromises = []
         let documentPromises = []
-        let getPromise = (file) => {
+        /*let getPromise = (file) => {
           console.log(file)
           return new Promise((resolve, reject) => {
             let reader = new FileReader();
             reader.onload = (e) => {
-              resolve({
-                name: file.name,
-                content: e.target.result
-              })
             }
             reader.readAsDataURL(file.file)
           })
@@ -161,10 +160,67 @@
         })
         this.inputs.documents.forEach(document => {
           documentPromises.push(getPromise(document))
-        })
-        let documentsContents = []
-        let photosContents = []
-        Promise.all([
+        })*/
+        let documentsContents = this.inputs.documents.map(document => ({
+          name: document.name,
+          content: document.base64
+        }))
+        let photosContents = this.inputs.photos.map(photo => ({
+          name: photo.name,
+          content: photo.base64
+        }))
+        let request = {
+          "name": this.inputs.name,
+          "price": parseInt(this.inputs.price),
+          "object": this.inputs.address,
+          "comment": this.inputs.comment,
+          "completeAt": parseInt(this.inputs.dateTime.getTime() / 1000),
+          "photos": photosContents,
+          "files": documentsContents
+        }
+        console.log(this.inputs)
+        console.log(request)
+        if (this.inputs.work !== null) {
+          request.works = [this.inputs.work.id]
+        }
+        this.$f7.dialog.preloader('Подождите')
+        Api.createBid(request)
+          .then((response) => {
+            let serverError = false
+            if (typeof response.error !== 'undefined') {
+              serverError = true
+              this.$f7.dialog.close()
+              this.$f7.dialog.alert(response.error.message, 'Ошибка')
+            } else {
+              // this.$f7router.back()
+              this.$f7.dialog.close()
+            }
+            this.responseErrorHelper(response, 'name', 'name', this.inputErrors)
+            this.responseErrorHelper(response, 'price', 'price', this.inputErrors)
+            this.responseErrorHelper(response, 'object', 'address', this.inputErrors)
+            this.responseErrorHelper(response, 'comment', 'comment', this.inputErrors)
+            for (let name in this.inputErrors) {
+              if (this.inputErrors.hasOwnProperty(name)) {
+                if (this.inputErrors[name] !== null) {
+                  return false
+                }
+              }
+            }
+            if (!serverError) {
+              this.$f7router.navigate('/', {
+                reloadCurrent: true
+              })
+            }
+          })
+          .catch((response) => {
+            this.$f7.dialog.close()
+            if (typeof response.data.error.message !== 'undefined') {
+              this.$f7.dialog.alert(response.data.error.message, 'Ошибка')
+            } else {
+              this.$f7.dialog.alert('Сервер неверно ответил на запрос', 'Ошибка')
+            }
+          })
+        /*Promise.all([
             new Promise((resolve, reject) => {
               Promise.all(photoPromises)
                 .then(values => {
@@ -181,57 +237,12 @@
             })
           ]
         ).then(() => {
-          let request = {
-            "name": this.inputs.name,
-            "price": parseInt(this.inputs.price),
-            "object": this.inputs.address,
-            "comment": this.inputs.comment,
-            "completeAt": parseInt(this.inputs.dateTime.getTime() / 1000),
-            "photos": photosContents,
-            "files": documentsContents
-          }
-          console.log(this.inputs)
-          if (this.inputs.work !== null) {
-            request.works = [this.inputs.work.id]
-          }
-          this.$f7.dialog.preloader('Подождите')
-          Api.createBid(request)
-            .then((response) => {
-              let serverError = false
-              if (typeof response.error !== 'undefined') {
-                serverError = true
-                this.$f7.dialog.close()
-                this.$f7.dialog.alert(response.error.message, 'Ошибка')
-              } else {
-                // this.$f7router.back()
-                this.$f7.dialog.close()
-              }
-              this.responseErrorHelper(response, 'name', 'name', this.inputErrors)
-              this.responseErrorHelper(response, 'price', 'price', this.inputErrors)
-              this.responseErrorHelper(response, 'object', 'address', this.inputErrors)
-              this.responseErrorHelper(response, 'comment', 'comment', this.inputErrors)
-              for (let name in this.inputErrors) {
-                if (this.inputErrors.hasOwnProperty(name)) {
-                  if (this.inputErrors[name] !== null) {
-                    return false
-                  }
-                }
-              }
-              if (!serverError) {
-                this.$f7router.navigate('/', {
-                  reloadCurrent: true
-                })
-              }
-            })
-            .catch(() => {
-              this.$f7.dialog.close()
-              this.$f7.dialog.alert('Сервер неверно ответил на запрос', 'Ошибка')
-            })
+
           console.log(request)
-        })
+        })*/
         //this.$f7.dialog.alert('Для загрузки файлов необходимы изменения в API', 'Подождите')
       },
-      loadWorks () {
+      loadWorks() {
         this.worksLoading = true
         this.works = []
         Api.getWorks({
@@ -263,7 +274,7 @@
         }
       },
       'inputs.work': {
-        handler () {
+        handler() {
           if (this.inputs.work) {
             this.inputs.price = this.inputs.work.price.toString()
           }

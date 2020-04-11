@@ -27,5 +27,8 @@ export default {
   },
   registration(request) {
     return Network.post('employee/v1/register', request)
+  },
+  setProfile (request) {
+    return Network.put('employee/v1/profile', request, true)
   }
 }

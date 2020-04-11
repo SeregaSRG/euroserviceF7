@@ -1,6 +1,9 @@
 <template>
   <div class="mf-navbar">
-    <div class="mf-navbar__back-button" v-if="!menuButton" @click="$f7router.back()">
+    <div class="mf-navbar__back-button" v-if="!menuButton && backButtonRouter" @click="$f7router.back()">
+      <img src="../src/navbar/back.svg" alt="" class="mf-navbar__back-button-image">
+    </div>
+    <div class="mf-navbar__back-button" v-if="!menuButton && !backButtonRouter" @click="$emit('back')">
       <img src="../src/navbar/back.svg" alt="" class="mf-navbar__back-button-image">
     </div>
     <div class="mf-navbar__menu-button panel-open" v-if="menuButton">
@@ -12,6 +15,9 @@
     </div>
     <div class="mf-navbar__title">
       {{ title }}
+    </div>
+    <div class="mf-navbar__tick" v-if="tick" @click="tickClick">
+      <img src="../src/navbar/tick.svg" class="mf-navbar__tick-img">
     </div>
   </div>
 </template>
@@ -27,6 +33,19 @@
       menuButton: {
         type: Boolean,
         default: false
+      },
+      backButtonRouter: {
+        type: Boolean,
+        default: true
+      },
+      tick: {
+        type: Boolean,
+        default: false
+      }
+    },
+    methods: {
+      tickClick () {
+        this.$emit('tick')
       }
     }
   }
@@ -41,6 +60,7 @@
     display: flex;
     background: #FFFFFF;
     box-shadow: 0px 3px 5px rgba(0, 27, 54, 0.15);
+    z-index:1;
 
     &__back-button {
       position: absolute;
@@ -88,11 +108,23 @@
       font-weight: 500;
       font-size: 20px;
       line-height: 24px;
+      padding:0 70px;
       /* identical to box height, or 180% */
       display: flex;
       align-items: center;
 
       color: #001B36;
+    }
+
+    &__tick{
+      height:100%;
+      position: absolute;
+      right:0;
+      display: flex;
+      &-img{
+        padding:0 20px;
+
+      }
     }
   }
 </style>

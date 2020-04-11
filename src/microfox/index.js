@@ -5,6 +5,8 @@ import mfNavbar from './components/mf-navbar'
 import mfInappNavbar from './components/mfInappNavbar'
 import mfTabbar from './components/mfTabbar'
 import mfInput from './components/mfInput'
+import mfInputAddress from './components/mfInputAddress'
+import mfInputCompany from './components/mfInputCompany'
 import mfError from './components/mfError'
 import mfSelect from './components/mfSelect'
 import mfPageSeparator from './components/mfPageSeparator'
@@ -20,3 +22,5 @@ Vue.component('mfError', mfError)
 Vue.component('mfInappNavbar', mfInappNavbar)
 Vue.component('mfPageSeparator', mfPageSeparator)
 Vue.component('mfDateInput', mfDateInput)
+Vue.component('mfInputAddress', mfInputAddress)
+Vue.component('mfInputCompany', mfInputCompany)

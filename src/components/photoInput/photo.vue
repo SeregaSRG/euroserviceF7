@@ -45,14 +45,19 @@
           console.log(this.$refs)
           this.$refs.uploadingImage.setAttribute('src', e.target.result)
           this.readyToShow = true
+          this.currentImage.base64 = e.target.result
+          this.currentImage.id = 5
+          this.$emit('update:image', this.currentImage)
         }
         reader.readAsDataURL(this.currentImage.file)
-        this.currentImage.id = 5
-        this.$emit('update:image', this.currentImage)
+      } else if (this.currentImage.base64) {
+        this.$refs.uploadingImage.setAttribute('src', this.currentImage.base64)
+        this.readyToShow = true
       }
     },
     methods: {
-      removePhoto () {
+      removePhoto (e) {
+        e.stopPropagation()
         this.$emit('remove')
       }
     }

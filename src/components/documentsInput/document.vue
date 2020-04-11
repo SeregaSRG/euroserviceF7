@@ -1,6 +1,6 @@
 <template>
   <div class="document" @click="openInBrowser" :class="{ 'document_not-editable' : !editable }">
-    <div class="document__uploaded">
+    <div class="document__uploaded" @click="openFileInBrowser">
       <div class="document__icon">
         <img src="../../assets/documentsInput/fileTypes/pdf.svg" class="document__icon-image">
       </div>
@@ -43,11 +43,26 @@
     mounted() {
       this.currentDocument = this.document
       if (this.currentDocument.file) {
-        this.currentDocument.id = 5
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          this.readyToShow = true
+          this.currentDocument.base64 = e.target.result
+          this.currentDocument.id = 5
+          this.$emit('update:document', this.currentDocument)
+          console.log(this.currentDocument)
+        }
+        reader.readAsDataURL(this.currentDocument.file)
       }
     },
     methods: {
-      remove() {
+      openFileInBrowser () {
+        if (!this.editable) {
+          window.open(this.currentDocument.url, '_system');
+          return false;
+        }
+      },
+      remove(e) {
+        e.stopPropagation()
         this.$emit('remove')
       },
       openInBrowser () {

@@ -61,15 +61,19 @@
           .catch()
       },
       loadBids () {
+        console.log('load bids')
         return Api.customer.getBids()
           .then((response) => {
             this.bids = response.bids.map(bid => ({
               id: bid.id,
               name: bid.name,
               workName: (typeof bid.works[0] !== 'undefined') ? bid.works[0].name : 'Неизвестно',
-              created: new Date(bid.createdAt.replace('-', '/')),
+              created: new Date(bid.createdAt.replace(/-/g, '/')),
+              created__: new Date(bid.createdAt),
+              created___: bid.createdAt,
               price: bid.price
             }))
+            console.log(this.bids)
           })
           .catch((e) => console.error(e))
       }
@@ -176,7 +180,7 @@
 
 
   .add {
-    position: fixed;
+    position: absolute;
     bottom: 16px;
     right: 16px;
     border-radius: 50%;

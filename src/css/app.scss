@@ -10,6 +10,7 @@
 * {
   /*font-family: 'SF Text';*/
   box-sizing:border-box;
+  user-select:none;
 }
 
 p {
@@ -24,5 +25,9 @@ input {
   -webkit-box-shadow: none;
   -moz-box-shadow: none;
   box-shadow: none;
+  user-select:none;
 }
 
+input, textarea{
+  user-select: auto!important;
+}

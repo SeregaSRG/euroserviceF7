@@ -30,5 +30,8 @@ export default {
   },
   registration(request) {
     return Network.post('customer/v1/register', request)
+  },
+  getWorksList(request) {
+    return Network.post('customer/v1/category/all-works', request)
   }
 }

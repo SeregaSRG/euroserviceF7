@@ -26,7 +26,12 @@
         </div>
         <div class="settings__separator" v-if="profileType === 'employee'"></div>
         <div class="settings__group group" v-if="profileType === 'employee'">
-          <div class="group__title">Компетенции</div>
+          <div class="group__title">
+            <div class="group__title-label">Компетенции</div>
+            <div class="group__title-edit" @click="competenciesEditOpen = true">
+              <img src="../assets/edit.png">
+            </div>
+          </div>
           <div class="competency" v-for="qualification in qualifications" :key="qualification.name">
             <div class="competency__category">{{ qualification.name }}</div>
             <div class="competency__subcategory">{{ worksList(qualification) }}</div>
@@ -46,13 +51,23 @@
           </div>
         </div>
       </div>
+      <competencies-edit :open.sync="competenciesEditOpen"></competencies-edit>
     </div>
   </f7-page>
 </template>
 
 <script>
+  import competenciesEdit from '../components/settings/competenciesEdit'
   export default {
     name: "settings",
+    data () {
+      return {
+        competenciesEditOpen: false
+      }
+    },
+    components: {
+      competenciesEdit: competenciesEdit
+    },
     computed: {
       profile () {
         if (this.$store.state.auth.auth.type === 'customer') {
@@ -79,6 +94,8 @@
     methods: {
       worksList (qualification) {
         return qualification.works.map(work => work.name).join(',')
+      },
+      closeCompetencies () {
       }
     }
   }
@@ -156,8 +173,14 @@
           line-height: 24px;
           height: 40px;
           display: flex;
+          justify-content: space-between;
           align-items: center;
           color: #001B36;
+          .group__title-edit{
+            font-size:0;
+            align-items: center;
+            display: flex;
+          }
         }
 
         .contact {
@@ -190,8 +213,13 @@
 
           .competency__category {
             font-size: 14px;
+            width:38%;
             line-height: 24px;
             color: #001B36;
+            flex-shrink: 0;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
           }
 
           .competency__subcategory {
@@ -200,6 +228,10 @@
             color: #001B36;
             max-width:70%;
             text-align:right;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            margin-left:10px;
           }
         }
       }

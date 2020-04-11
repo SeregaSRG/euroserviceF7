@@ -5,7 +5,7 @@
       <div class="mf-select__placeholder" v-if="(currentValue === null || currentValue === undefined) && !loading"> {{ placeholder }}</div>
       <select v-if="!loading" class="mf-input__select"
               :placeholder="placeholder"
-              ref="input"  :disabled="disabled" v-model="currentValue">
+              ref="input"  :disabled="disabled || noValues" v-model="currentValue">
         <option v-for="option in options" :value="option" :key="option.id">{{ option[optionName] }}</option>
       </select>
       <div class="mf-select__loading" v-if="loading">
@@ -89,6 +89,11 @@
       return {
         focus: false,
         currentValue: null
+      }
+    },
+    computed: {
+      noValues () {
+        return this.options.length === 0
       }
     },
     watch: {

@@ -68,9 +68,13 @@
         type: String,
         default: null
       },
+      minVal: {
+        type: Date,
+        default: null
+      },
       maxVal: {
-        type: Number,
-        default: undefined
+        type: Date,
+        default: null
       }
     },
     data() {
@@ -104,28 +108,26 @@
     },
     methods: {
       openDialog() {
-        if (this.type === 'date') {
-          cordova.plugins.DateTimePicker.show({
-            mode: "date",
-            date: (this.currentValue) ? this.currentValue : new Date(),
-            success: (newDate) => {
-              // Handle new date.
-              this.currentValue = newDate
-              this.$emit('update:value', this.currentValue)
-            }
-          })
-        } else {
-          cordova.plugins.DateTimePicker.show({
-            mode: "time",
-            date: (this.currentValue) ? this.currentValue : new Date(),
-            allowOldDates: false,
-            success: (newDate) => {
-              // Handle new date.
-              this.currentValue = newDate
-              this.$emit('update:value', this.currentValue)
-            }
-          })
+        let config = {
+          date: (this.currentValue) ? this.currentValue : new Date(),
+          success: (newDate) => {
+            // Handle new date.
+            this.currentValue = newDate
+            this.$emit('update:value', this.currentValue)
+          }
         }
+        if (this.minVal) {
+          config.minDate = this.minVal
+        }
+        if (this.maxVal) {
+          config.maxDate = this.maxVal
+        }
+        if (this.type === 'date' || this.type === 'time') {
+          config.mode = this.type
+        }
+        console.log(config)
+        cordova.plugins.DateTimePicker.show(config)
+
       }
     }
   }

@@ -3,7 +3,8 @@ const state = {
     loginState: false,
     type: null,
     token: null
-  }
+  },
+  skipOnboarding: false
 }
 
 const getters = {
@@ -39,6 +40,9 @@ const mutations = {
   },
   SET_AUTH_TOKEN (state, token) {
     state.auth.token = token
+  },
+  SET_UNBOARDING_SKIP (state) {
+    state.skipOnboarding = true
   }
 }
 

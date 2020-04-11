@@ -18,7 +18,7 @@
     </div>
     <div class="menu__container">
       <div class="menu">
-        <a href="/new" class="panel-close" v-if="profileType === 'employee'">
+        <a @click="changePage('/new')" class="panel-close" v-if="profileType === 'employee'">
           <div class="side-panel-button" :class="{ 'side-panel-button_selected': currentRoute === '/new' }">
             <div class="side-panel-button__icon">
               <img src="../../assets/side-panel/icons/orders.svg">
@@ -26,7 +26,7 @@
             <div class="side-panel-button__label">Новые заявки</div>
           </div>
         </a>
-        <a href="/" class="panel-close">
+        <a @click="changePage('/')" class="panel-close">
           <div class="side-panel-button" :class="{ 'side-panel-button_selected': currentRoute === '/' }">
             <div class="side-panel-button__icon">
               <img src="../../assets/side-panel/icons/orders.svg">
@@ -34,7 +34,7 @@
             <div class="side-panel-button__label">Мои заявки</div>
           </div>
         </a>
-        <a href="/archive" class="panel-close">
+        <a @click="changePage('/archive')" class="panel-close">
           <div class="side-panel-button" :class="{ 'side-panel-button_selected': currentRoute === '/archive' }">
             <div class="side-panel-button__icon">
               <img src="../../assets/side-panel/icons/archive.svg">
@@ -94,14 +94,20 @@
       email() {
         return this.profile.email
       },
-      currentRoute () {
+      currentRoute() {
         return this.$f7.views.main.router.currentRoute.path
       }
     },
-    mounted () {
+    mounted() {
       console.log(this.$f7.views.main.currentRoute)
     },
     methods: {
+      changePage(path) {
+        this.$f7.views.main.router.navigate(path, {
+          reloadCurrent: true,
+          ignoreCache: true,
+        })
+      },
       logout() {
         this.$f7.dialog.preloader('Подождите')
         setTimeout(() => {
@@ -130,7 +136,7 @@
     padding: 0 20px;
     opacity: 0.5;
 
-    &.side-panel-button_selected{
+    &.side-panel-button_selected {
       opacity: 1;
     }
 

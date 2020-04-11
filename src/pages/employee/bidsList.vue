@@ -2,22 +2,25 @@
   <f7-page name="bidsList" bg-color="white">
     <div class="workspace">
       <mf-inapp-navbar :menuButton="true" class="create-order__navbar" :title="pageTitle"></mf-inapp-navbar>
-      <div class="application" v-show="bids.length === 0 && !loading">
-        <img class="image" src="../../assets/workspace/Artwork.jpg">
-        <p class="description">У Вас пока нет активных заявок, создайте новую заявку</p>
-      </div>
-      <div class="bids-list ptr-content" ref="ptr" data-ptr-distance="55" @ptr:refresh="updateBids" v-show="!loading">
+      <div class="bids-list__content ptr-content" ref="ptr" data-ptr-distance="55" @ptr:refresh="updateBids">
         <div class="ptr-preloader">
           <div class="preloader"></div>
           <div class="ptr-arrow"></div>
         </div>
-        <div class="bids-list__wrapper ptr-watch-scrollable">
-          <bid-item v-for="bid in bids" :bid="bid" :key="bid.id">
-          </bid-item>
+        <div class="application" v-show="bids.length === 0 && !loading">
+          <img class="image" src="../../assets/workspace/Artwork.jpg">
+          <p class="description">У Вас пока нет активных заявок</p>
         </div>
-      </div>
-      <div class="loading" v-if="loading">
-        <f7-preloader color="green"></f7-preloader>
+        <div class="bids-list ptr-watch-scrollable" ref="ptr"
+             v-show="!loading && bids.length !== 0">
+          <div class="bids-list__wrapper ptr-watch-scrollable">
+            <bid-item v-for="bid in bids" :bid="bid" :key="bid.id">
+            </bid-item>
+          </div>
+        </div>
+        <div class="loading ptr-ignore" v-if="loading">
+          <f7-preloader color="green"></f7-preloader>
+        </div>
       </div>
     </div>
   </f7-page>
@@ -94,7 +97,7 @@
               id: parseInt(bid.id),
               name: bid.name,
               workName: (typeof bid.works[0] !== 'undefined') ? bid.works[0].name : 'Неизвестно',
-              created: new Date(bid.createdAt.replace('-', '/')),
+              created: new Date(bid.createdAt.replace(/-/g, '/')),
               price: bid.price,
               status: bid.status
             }))
@@ -114,10 +117,18 @@
 </script>
 
 <style lang="scss" scoped>
+  .create-order__navbar{
+    z-index:2!important;
+  }
+
   .workspace{
     display: flex;
     height:100%;
     flex-direction: column;
+    overflow-y: hidden;
+    .ptr-preloader{
+      z-index:1;
+    }
     .header {
       box-sizing: border-box;
       display: flex;
@@ -156,55 +167,63 @@
         }
       }
     }
-    .loading{
-      flex-grow:1;
-      display:flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
-    }
-    .bids-list{
-      flex-grow:1;
-      height: calc(100% - 56px);
-      overflow:scroll;
-      background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
-      .bids-list__wrapper{
-        padding: 16px 8px;
-      }
-    }
-    .application {
-      flex-grow:1;
+    .bids-list__content{
       display: flex;
-      justify-content: center;
-      align-items: center;
-      background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
       flex-direction: column;
-
-      .image {
-        width: 145px;
-        height: 135px;
-        padding-top: 40%;
-        box-sizing: content-box;
+      flex-grow: 1;
+      height:calc(100% - 56px);
+      overflow:scroll;
+      .loading{
+        flex-grow:1;
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
       }
+      .bids-list{
+        flex-grow:1;
+        height: calc(100% - 56px);
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
+        position:relative;
+        z-index:0;
+        margin-top:0;
+        .bids-list__wrapper{
+          padding: 16px 8px;
+        }
+      }
+      .application {
+        flex-grow:1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(0deg, #FFFFFF, #FFFFFF), #EAECF4;
+        flex-direction: column;
 
-      .description {
-        width: 300px;
-        height: 50px;
-        font-family: Roboto;
-        font-style: normal;
-        font-size: 18px;
-        font-weight: normal;
-        line-height: 22px;
-        text-align: center;
-        color: #BEC2CE;
-        padding-top: 15px;
+        .image {
+          width: 145px;
+          height: 135px;
+          box-sizing: content-box;
+        }
+
+        .description {
+          width: 300px;
+          height: 50px;
+          font-family: Roboto;
+          font-style: normal;
+          font-size: 18px;
+          font-weight: normal;
+          line-height: 22px;
+          text-align: center;
+          color: #BEC2CE;
+          padding-top: 15px;
+        }
       }
     }
   }
 
 
   .add {
-    position: fixed;
+    position: absolute;
     bottom: 16px;
     right: 16px;
     border-radius: 50%;

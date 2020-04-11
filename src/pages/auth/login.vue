@@ -30,7 +30,7 @@
         <mf-button
             :action="login"
             :disabled="!inputsValid"
-        >Отправить
+        >Войти
         </mf-button>
       </div>
     </div>
@@ -93,6 +93,7 @@
         }
 
         let success = (data, authCallBack) => {
+          console.log(data)
           if (typeof data.bearerToken !== 'undefined') {
             authCallBack(data.bearerToken)
           } else if (typeof data.error !== 'undefined') {
@@ -120,6 +121,10 @@
                   })
                   resolve()
                 })
+              .catch(error => {
+                success(error.response.data, () => {})
+                resolve()
+              })
           })
         } else {
           loginPromise = new Promise((resolve, reject) => {
@@ -135,6 +140,10 @@
                   })
                   resolve()
                 })
+              .catch(error => {
+                success(error.response.data, () => {})
+                resolve()
+              })
           })
         }
         loginPromise.then(() => {

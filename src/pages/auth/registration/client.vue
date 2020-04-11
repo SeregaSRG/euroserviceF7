@@ -7,25 +7,37 @@
           :type="'tel'"
           :error="inputErrors.phone"
           mask="+7 (999) 999-99-99"
+          :valid-condition="validPhone"
       ></mf-input>
       <mf-input
           :placeholder="'E-mail адрес'"
           :value.sync="credentials.email"
           :type="'email'"
           :error="inputErrors.email"
+          :valid-condition="validEmail"
       ></mf-input>
-      <mf-select v-model="credentials.company" placeholder="Наименование организации"
+      <mf-input-company
+          @focus="inputErrors.company = ''"
+          :error="inputErrors.company"
+          :value.sync="credentials.company"
+          :inn.sync="credentials.inn"
+          :valid-condition="validCompany"
+          placeholder="Наименование организации">
+      </mf-input-company>
+      <!--<mf-select v-model="credentials.company" placeholder="Наименование организации"
                  :error="inputErrors.company"
-                 :options="companies" :loading="loading.companies" option-name="name"></mf-select>
+                 :options="companies" :loading="loading.companies" option-name="name"></mf-select>-->
       <mf-input
           :placeholder="'Имя'"
           :value.sync="credentials.firstName"
           :error="inputErrors.firstName"
+          :valid-condition="validFirstName"
       ></mf-input>
       <mf-input
           :placeholder="'Фамилия'"
           :value.sync="credentials.surname"
           :error="inputErrors.surname"
+          :valid-condition="validSurname"
       ></mf-input>
       <mf-input
           :placeholder="'Отчество'"
@@ -33,16 +45,18 @@
           :error="inputErrors.patronymic"
       ></mf-input>
       <mf-input
-          :placeholder="'Пароль'"
+          :placeholder="'Пароль (не менее 6 символов)'"
           :value.sync="credentials.password"
           :error="inputErrors.password"
           :type="'password'"
+          :valid-condition="validPassword"
       ></mf-input>
       <mf-input
           :placeholder="'Повторите пароль'"
           :value.sync="credentials.passwordRepeat"
           :error="inputErrors.passwordRepeat"
           :type="'password'"
+          :valid-condition="validRepeatPassword"
       ></mf-input>
     </div>
     <mf-button
@@ -59,28 +73,37 @@
     name: "client",
     computed: {
       inputsValid() {
-        console.log('working')
-        let emailRegexp = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-        let phoneRegexp = /^\+7 \([\d]{3}\) [\d]{3}-[\d]{2}-[\d]{2}$/
-        console.log(
-          emailRegexp.test(this.credentials.email),
-          phoneRegexp.test(this.credentials.phone),
-          this.credentials.company !== null,
-          this.credentials.password.length > 0,
-          this.credentials.passwordRepeat.length > 0,
-          this.credentials.firstName.length > 0,
-          this.credentials.surname.length > 0,
-          this.credentials.patronymic.length > 0)
         return (
-          emailRegexp.test(this.credentials.email) &&
-          phoneRegexp.test(this.credentials.phone) &&
-          this.credentials.company !== null &&
-          this.credentials.password.length > 0 &&
-          this.credentials.passwordRepeat.length > 0 &&
-          this.credentials.firstName.length > 0 &&
-          this.credentials.surname.length > 0 &&
-          this.credentials.patronymic.length > 0
+          this.validFirstName &&
+          this.validSurname &&
+          this.validEmail &&
+          this.validPhone &&
+          this.validCompany &&
+          this.validPassword &&
+          this.validRepeatPassword
         )
+      },
+      validFirstName() {
+        return this.credentials.firstName.length !== 0
+      },
+      validSurname() {
+        return this.credentials.surname.length !== 0
+      },
+      validEmail() {
+        return /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          .test(this.credentials.email)
+      },
+      validPhone () {
+        return /^\+7 \([\d]{3}\) [\d]{3}-[\d]{2}-[\d]{2}$/.test(this.credentials.phone)
+      },
+      validCompany() {
+        return this.credentials.company.length !== 0
+      },
+      validPassword() {
+        return this.credentials.password.length > 6
+      },
+      validRepeatPassword() {
+        return this.credentials.passwordRepeat.length !== 0 && this.credentials.password === this.credentials.passwordRepeat
       }
     },
     data() {
@@ -98,7 +121,8 @@
           firstName: '',
           surname: '',
           patronymic: '',
-          company: null
+          inn: '',
+          company: ''
         },
         inputErrors: {
           phone: null,
@@ -129,15 +153,17 @@
           return
         }
         this.loading.login = true
+        let newPhone = this.credentials.phone
         Api.registration({
           "email": this.credentials.email,
           "password": this.credentials.password,
           "passwordRepeat": this.credentials.passwordRepeat,
-          "phone": this.credentials.phone,
+          "phone": newPhone.slice(4,7)+newPhone.slice(9,12)+newPhone.slice(13,15)+newPhone.slice(16,18),
           "first_name": this.credentials.firstName,
-          "second_name": this.credentials.surname,
-          "last_name": this.credentials.patronymic,
-          "company_id": this.credentials.company.id
+          "second_name": this.credentials.patronymic,
+          "last_name": this.credentials.surname,
+          "inn": this.credentials.inn,
+          "company_id": this.credentials.company
         }).then(data => {
           console.log(data)
           if (data.email !== undefined && !Array.isArray(data.email)) {
@@ -151,12 +177,26 @@
             this.responseErrorHelper(data, 'password', 'password', this.inputErrors)
             this.responseErrorHelper(data, 'passwordRepeat', 'passwordRepeat', this.inputErrors)
             this.responseErrorHelper(data, 'first_name', 'firstName', this.inputErrors)
-            this.responseErrorHelper(data, 'second_name', 'surname', this.inputErrors)
-            this.responseErrorHelper(data, 'last_name', 'patronymic', this.inputErrors)
+            this.responseErrorHelper(data, 'second_name', 'patronymic', this.inputErrors)
+            this.responseErrorHelper(data, 'last_name', 'surname', this.inputErrors)
+            this.responseErrorHelper(data, 'inn', 'company', this.inputErrors)
             this.responseErrorHelper(data, 'company_id', 'company', this.inputErrors)
             this.loading.login = false
           }
         })
+          .catch((data) => {
+            data = data.response.data
+            this.responseErrorHelper(data, 'email', 'email', this.inputErrors)
+            this.responseErrorHelper(data, 'phone', 'phone', this.inputErrors)
+            this.responseErrorHelper(data, 'password', 'password', this.inputErrors)
+            this.responseErrorHelper(data, 'passwordRepeat', 'passwordRepeat', this.inputErrors)
+            this.responseErrorHelper(data, 'first_name', 'firstName', this.inputErrors)
+            this.responseErrorHelper(data, 'second_name', 'patronymic', this.inputErrors)
+            this.responseErrorHelper(data, 'last_name', 'surname', this.inputErrors)
+            this.responseErrorHelper(data, 'inn', 'company', this.inputErrors)
+            this.responseErrorHelper(data, 'company_id', 'company', this.inputErrors)
+            this.loading.login = false
+          })
       }
     },
     mounted() {
